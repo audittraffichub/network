@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRAFFIC ENGINE | audittraffichub</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .audit-card {
+            background: #111;
+            border: 1px solid var(--panel-border);
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .timer-display {
+            font-size: 2rem;
+            color: var(--matrix-green);
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        #submit-area {
+            display: none; /* ซ่อนไว้ก่อนจนกว่าจะดูครบ */
+            margin-top: 40px;
+            padding: 30px;
+            border: 2px dashed var(--matrix-green);
+            background: rgba(0, 255, 65, 0.05);
+        }
+        .step-indicator {
+            color: #555;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        .active-step { color: var(--matrix-green); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header class="header">
+        <h1 class="matrix-title">TRAFFIC EXCHANGE ENGINE</h1>
+        <p>[ PROTOCOL: VERIFY TO POST ]</p>
+    </header>
+
+    <div id="verify-area">
+        <div class="step-indicator">
+            STATUS: <span id="current-step">0</span> / 3 SITES VERIFIED
+        </div>
+
+        <div class="audit-card">
+            <h3>ขั้นตอนการตรวจสอบ</h3>
+            <p id="instruction">กรุณากดปุ่มด้านล่างเพื่อเริ่มการ Audit เว็บไซต์สมาชิก</p>
+            <div id="timer" class="timer-display" style="display:none;">30</div>
+            <button id="action-btn" class="audit-btn" onclick="startAudit()">เริ่มการตรวจสอบ (SITE 1)</button>
+        </div>
+    </div>
+
+    <div id="submit-area" class="audit-card">
+        <h2 style="color:var(--matrix-green)">[ ACCESS GRANTED ]</h2>
+        <p>คุณผ่านการตรวจสอบแล้ว สามารถส่งโดเมนของคุณเข้าสู่ระบบได้</p>
+        <br>
+        <a href="https://tally.so/r/J9kgXK" target="_blank" class="audit-btn" style="background:var(--matrix-green); color:#000;">วางลิงก์โดเมนของคุณ</a>
+    </div>
+</div>
+
+<script>
+    let step = 0;
+    let timerInterval;
+    
+    // รายชื่อเว็บสมาชิก (เบื้องต้นใส่เว็บพี่เป็นตัวอย่าง เดี๋ยวเราจะเชื่อม Sheets ทีหลัง)
+    const memberSites = [
+        "https://bugtraderyai.com",
+        "https://bugtraderyai.com/intelligence-hub",
+        "https://bugtraderyai.com/live"
+    ];
+
+    function startAudit() {
+        const btn = document.getElementById('action-btn');
+        const timerDiv = document.getElementById('timer');
+        let timeLeft = 30; // กักเวลา 30 วินาที
+
+        // สุ่มเปิดเว็บสมาชิกในหน้าต่างใหม่
+        window.open(memberSites[step], '_blank');
+
+        btn.disabled = true;
+        btn.innerText = "กำลังตรวจสอบความถูกต้อง...";
+        timerDiv.style.display = 'block';
+
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            timerDiv.innerText = timeLeft;
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                completeStep();
+            }
+        }, 1000);
+    }
+
+    function completeStep() {
+        step++;
+        document.getElementById('current-step').innerText = step;
+        const btn = document.getElementById('action-btn');
+        const timerDiv = document.getElementById('timer');
+
+        if (step < 3) {
+            btn.disabled = false;
+            btn.innerText = `เริ่มการตรวจสอบ (SITE ${step + 1})`;
+            timerDiv.style.display = 'none';
+            document.getElementById('timer').innerText = "30";
+        } else {
+            document.getElementById('verify-area').style.display = 'none';
+            document.getElementById('submit-area').style.display = 'block';
+        }
+    }
+</script>
+
+</body>
+</html>
