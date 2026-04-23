@@ -6,32 +6,12 @@
     <title>TRAFFIC ENGINE | audittraffichub</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .audit-card {
-            background: #111;
-            border: 1px solid var(--panel-border);
-            padding: 25px;
-            margin: 20px 0;
-            text-align: center;
-        }
-        .timer-display {
-            font-size: 2rem;
-            color: var(--matrix-green);
-            margin: 15px 0;
-            font-weight: bold;
-        }
-        #submit-area {
-            display: none; /* ซ่อนไว้ก่อนจนกว่าจะดูครบ */
-            margin-top: 40px;
-            padding: 30px;
-            border: 2px dashed var(--matrix-green);
-            background: rgba(0, 255, 65, 0.05);
-        }
-        .step-indicator {
-            color: #555;
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-        }
-        .active-step { color: var(--matrix-green); font-weight: bold; }
+        .audit-card { background: #111; border: 1px solid var(--panel-border); padding: 25px; margin: 20px 0; text-align: center; }
+        .timer-display { font-size: 2.5rem; color: var(--matrix-green); margin: 15px 0; font-weight: bold; font-family: 'Courier New', monospace; }
+        #submit-area { display: none; margin-top: 40px; padding: 30px; border: 2px dashed var(--matrix-green); background: rgba(0, 255, 65, 0.05); }
+        .step-indicator { color: #888; font-size: 1rem; margin-bottom: 20px; letter-spacing: 1px; }
+        .loading-text { color: var(--matrix-green); animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -39,25 +19,29 @@
 <div class="container">
     <header class="header">
         <h1 class="matrix-title">TRAFFIC EXCHANGE ENGINE</h1>
-        <p>[ PROTOCOL: VERIFY TO POST ]</p>
+        <p style="color: #666;">[ DATABASE CONNECTED: ACTIVE ]</p>
     </header>
 
     <div id="verify-area">
         <div class="step-indicator">
-            STATUS: <span id="current-step">0</span> / 3 SITES VERIFIED
+            PROGRESS: <span id="current-step" style="color: var(--matrix-green); font-weight: bold;">0</span> / 3 SITES VERIFIED
         </div>
 
         <div class="audit-card">
-            <h3>ขั้นตอนการตรวจสอบ</h3>
-            <p id="instruction">กรุณากดปุ่มด้านล่างเพื่อเริ่มการ Audit เว็บไซต์สมาชิก</p>
+            <h3 id="site-title">กำลังดึงข้อมูลจากโครงข่าย...</h3>
+            <p id="instruction">กรุณารอสักครู่ ระบบกำลังจัดเตรียมคิวที่ยุติธรรมสำหรับคุณ</p>
+            
             <div id="timer" class="timer-display" style="display:none;">30</div>
-            <button id="action-btn" class="audit-btn" onclick="startAudit()">เริ่มการตรวจสอบ (SITE 1)</button>
+            
+            <button id="action-btn" class="audit-btn" onclick="startAudit()" disabled>
+                <span class="loading-text">INITIALIZING...</span>
+            </button>
         </div>
     </div>
 
     <div id="submit-area" class="audit-card">
         <h2 style="color:var(--matrix-green)">[ ACCESS GRANTED ]</h2>
-        <p>คุณผ่านการตรวจสอบแล้ว สามารถส่งโดเมนของคุณเข้าสู่ระบบได้</p>
+        <p>คุณผ่านการตรวจสอบโปรโตคอลแล้ว ระบบอนุญาตให้คุณส่งลิงก์ได้</p>
         <br>
         <a href="https://tally.so/r/J9kgXK" target="_blank" class="audit-btn" style="background:var(--matrix-green); color:#000;">วางลิงก์โดเมนของคุณ</a>
     </div>
@@ -66,24 +50,39 @@
 <script>
     let step = 0;
     let timerInterval;
+    let memberSites = [];
     
-    // รายชื่อเว็บสมาชิก (เบื้องต้นใส่เว็บพี่เป็นตัวอย่าง เดี๋ยวเราจะเชื่อม Sheets ทีหลัง)
-    const memberSites = [
-        "https://bugtraderyai.com",
-        "https://bugtraderyai.com/intelligence-hub",
-        "https://bugtraderyai.com/live"
-    ];
+    // 🔗 เชื่อมต่อกับ Google Apps Script ของพี่
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwh0BvfVDQ7lzb38tgz_ueo11t1GVpGqOB-O9NGSb_KlEXNzW7-PLYOOD2CMUDmCKhicg/exec";
+
+    // 1. ดึงข้อมูลจาก Google Sheets ทันทีที่โหลดหน้า
+    window.onload = async () => {
+        try {
+            const response = await fetch(SCRIPT_URL);
+            memberSites = await response.json();
+            
+            if (memberSites.length > 0) {
+                document.getElementById('site-title').innerText = "คิวการตรวจสอบพร้อมใช้งาน";
+                document.getElementById('instruction').innerText = "กดปุ่มด้านล่างเพื่อเริ่ม Audit (ต้องดูให้ครบ 3 เว็บ)";
+                document.getElementById('action-btn').disabled = false;
+                document.getElementById('action-btn').innerText = "เริ่มการตรวจสอบ (SITE 1)";
+            }
+        } catch (error) {
+            console.error("Error fetching sites:", error);
+            document.getElementById('instruction').innerText = "เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล กรุณาลองใหม่";
+        }
+    };
 
     function startAudit() {
         const btn = document.getElementById('action-btn');
         const timerDiv = document.getElementById('timer');
         let timeLeft = 30; // กักเวลา 30 วินาที
 
-        // สุ่มเปิดเว็บสมาชิกในหน้าต่างใหม่
+        // เปิดเว็บสมาชิกตามลำดับที่สุ่มมาจาก Sheets
         window.open(memberSites[step], '_blank');
 
         btn.disabled = true;
-        btn.innerText = "กำลังตรวจสอบความถูกต้อง...";
+        btn.innerText = "กำลังตรวจเช็คการเข้าชม...";
         timerDiv.style.display = 'block';
 
         timerInterval = setInterval(() => {
