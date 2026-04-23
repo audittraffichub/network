@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUDIT TRAFFIC NETWORK | audittraffichub</title>
+    
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .hero-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            text-align: center;
+        }
+
+        .system-status {
+            color: var(--matrix-green);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .description {
+            max-width: 650px;
+            color: #888;
+            margin: 20px 0 40px 0;
+            font-size: 1.1rem;
+        }
+
+        .glitch-text {
+            animation: glitch 2s infinite;
+        }
+
+        @keyframes glitch {
+            0% { text-shadow: 2px 0 red; }
+            50% { text-shadow: -2px 0 blue; }
+            100% { text-shadow: 2px 0 red; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container hero-section">
+    <div class="system-status">[ SYSTEM ONLINE - NODE: 01 ]</div>
+    <h1 class="matrix-title glitch-text">AUDITOR TRAFFIC EXCHANGE</h1>
+    
+    <p class="description">
+        ยินดีต้อนรับสู่เครือข่ายแลกเปลี่ยนทราฟฟิกคุณภาพสูง <br>
+        ระบบจะทำการตรวจสอบ (Audit) ความถูกต้องของทุกการเข้าชม <br>
+        เพื่อให้แน่ใจว่าเว็บไซต์ของคุณได้รับ "คน" ไม่ใช่ "บอท"
+    </p>
+
+    <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
+        <a href="rules.html" class="audit-btn">อ่านกฎระเบียบ (PROTOCOL)</a>
+        
+        <a href="network.html" class="audit-btn" style="background: var(--matrix-green); color: #000;">เข้าสู่ระบบ EXCHANGE</a>
+    </div>
+
+    <div style="margin-top: 50px; color: #444; font-size: 0.8rem;">
+        ID: 0x8234-TRAFFIC-READY | ENCRYPTION: ACTIVE
+    </div>
+</div>
+
+<footer style="text-align: center; padding: 20px; color: #333; font-size: 0.7rem;">
+    &copy; 2026 AUDIT TRAFFIC HUB - ALL RIGHTS RESERVED
+</footer>
+
+</body>
+</html>
