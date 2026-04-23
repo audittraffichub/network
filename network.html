@@ -3,47 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRAFFIC ENGINE | audittraffichub</title>
+    <title>TRAFFIC ENGINE V2 | audittraffichub</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .audit-card { background: #111; border: 1px solid var(--panel-border); padding: 25px; margin: 20px 0; text-align: center; }
-        .timer-display { font-size: 2.5rem; color: var(--matrix-green); margin: 15px 0; font-weight: bold; font-family: 'Courier New', monospace; }
-        #submit-area { display: none; margin-top: 40px; padding: 30px; border: 2px dashed var(--matrix-green); background: rgba(0, 255, 65, 0.05); }
-        .step-indicator { color: #888; font-size: 1rem; margin-bottom: 20px; letter-spacing: 1px; }
-        .loading-text { color: var(--matrix-green); animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        .timer-display { font-size: 2.5rem; color: var(--matrix-green); margin: 15px 0; font-weight: bold; }
+        #submit-area, #action-area { display: none; }
+        input[type="text"] { 
+            padding: 12px; width: 80%; max-width: 300px; 
+            background: #000; color: var(--matrix-green); 
+            border: 1px solid var(--matrix-green); margin-bottom: 20px;
+            text-align: center; font-family: monospace;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header class="header">
-        <h1 class="matrix-title">TRAFFIC EXCHANGE ENGINE</h1>
-        <p style="color: #666;">[ DATABASE CONNECTED: ACTIVE ]</p>
+        <h1 class="matrix-title">TRAFFIC ENGINE V2</h1>
+        <p id="user-display" style="color: #666;">[ SYSTEM: STANDBY ]</p>
     </header>
 
-    <div id="verify-area">
-        <div class="step-indicator">
-            PROGRESS: <span id="current-step" style="color: var(--matrix-green); font-weight: bold;">0</span> / 3 SITES VERIFIED
-        </div>
+    <div id="login-area" class="audit-card">
+        <h3>IDENTITY VERIFICATION</h3>
+        <p>ระบุ ID หรือชื่อเล่นเพื่อสะสมแต้ม (Done Points)</p>
+        <input type="text" id="viewer-id" placeholder="Enter Your ID...">
+        <br>
+        <button class="audit-btn" onclick="saveIdentity()">ACCESS SYSTEM</button>
+    </div>
 
+    <div id="action-area">
+        <div style="text-align:center; color:#888; margin-bottom:10px;">
+            PROGRESS: <span id="current-step" style="color:var(--matrix-green)">0</span> / 3 SITES
+        </div>
         <div class="audit-card">
-            <h3 id="site-title">กำลังดึงข้อมูลจากโครงข่าย...</h3>
-            <p id="instruction">กรุณารอสักครู่ ระบบกำลังจัดเตรียมคิวที่ยุติธรรมสำหรับคุณ</p>
-            
+            <h3 id="site-title">กำลังดึงข้อมูลคิว...</h3>
             <div id="timer" class="timer-display" style="display:none;">30</div>
-            
-            <button id="action-btn" class="audit-btn" onclick="startAudit()" disabled>
-                <span class="loading-text">INITIALIZING...</span>
-            </button>
+            <button id="action-btn" class="audit-btn" onclick="startAudit()" disabled>LOADING...</button>
         </div>
     </div>
 
     <div id="submit-area" class="audit-card">
         <h2 style="color:var(--matrix-green)">[ ACCESS GRANTED ]</h2>
-        <p>คุณผ่านการตรวจสอบโปรโตคอลแล้ว ระบบอนุญาตให้คุณส่งลิงก์ได้</p>
+        <p>แต้มสะสมของคุณถูกบันทึกแล้ว คุณสามารถส่งลิงก์ได้ทันที</p>
         <br>
         <a href="https://tally.so/r/J9kgXK" target="_blank" class="audit-btn" style="background:var(--matrix-green); color:#000;">วางลิงก์โดเมนของคุณ</a>
+        <br><br>
+        <button class="audit-btn" onclick="location.reload()" style="font-size:0.7rem; padding:5px 10px;">ทำรายการใหม่</button>
     </div>
 </div>
 
@@ -52,43 +59,59 @@
     let timerInterval;
     let memberSites = [];
     
-    // 🔗 เชื่อมต่อกับ Google Apps Script ของพี่
+    // 🔗 เปลี่ยนเป็น URL Google Script V2 ของพี่ (อันที่มี doPost)
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyEPWiqZsfB6vDyCcMPeNu3YZpE9lzatYcpui5K1zssz7e7tOlqYgiHIW9DamutjUkE2Q/exec";
 
-    // 1. ดึงข้อมูลจาก Google Sheets ทันทีที่โหลดหน้า
-    window.onload = async () => {
+    window.onload = () => {
+        const savedId = localStorage.getItem('auditor_id');
+        if (savedId) {
+            showActionArea(savedId);
+        }
+    };
+
+    function saveIdentity() {
+        const id = document.getElementById('viewer-id').value.trim();
+        if (id.length >= 3) {
+            localStorage.setItem('auditor_id', id);
+            showActionArea(id);
+        } else {
+            alert("ID ต้องมีความยาวอย่างน้อย 3 ตัวอักษร");
+        }
+    }
+
+    async function showActionArea(id) {
+        document.getElementById('login-area').style.display = 'none';
+        document.getElementById('action-area').style.display = 'block';
+        document.getElementById('user-display').innerText = `[ USER: ${id.toUpperCase()} ]`;
+        
+        // ดึงคิวจาก Sheets
         try {
             const response = await fetch(SCRIPT_URL);
             memberSites = await response.json();
-            
             if (memberSites.length > 0) {
-                document.getElementById('site-title').innerText = "คิวการตรวจสอบพร้อมใช้งาน";
-                document.getElementById('instruction').innerText = "กดปุ่มด้านล่างเพื่อเริ่ม Audit (ต้องดูให้ครบ 3 เว็บ)";
+                document.getElementById('site-title').innerText = "พร้อมทำการ Audit";
                 document.getElementById('action-btn').disabled = false;
-                document.getElementById('action-btn').innerText = "เริ่มการตรวจสอบ (SITE 1)";
+                document.getElementById('action-btn').innerText = "เริ่มตรวจสอบ (SITE 1)";
             }
-        } catch (error) {
-            console.error("Error fetching sites:", error);
-            document.getElementById('instruction').innerText = "เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล กรุณาลองใหม่";
+        } catch (e) {
+            document.getElementById('site-title').innerText = "ERROR: ระบบฐานข้อมูลขัดข้อง";
         }
-    };
+    }
 
     function startAudit() {
         const btn = document.getElementById('action-btn');
         const timerDiv = document.getElementById('timer');
-        let timeLeft = 30; // กักเวลา 30 วินาที
+        let timeLeft = 30;
 
-        // เปิดเว็บสมาชิกตามลำดับที่สุ่มมาจาก Sheets
         window.open(memberSites[step], '_blank');
 
         btn.disabled = true;
-        btn.innerText = "กำลังตรวจเช็คการเข้าชม...";
+        btn.innerText = "กำลังวิเคราะห์โครงสร้างเว็บ...";
         timerDiv.style.display = 'block';
 
         timerInterval = setInterval(() => {
             timeLeft--;
             timerDiv.innerText = timeLeft;
-
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
                 completeStep();
@@ -96,7 +119,17 @@
         }, 1000);
     }
 
-    function completeStep() {
+    async function completeStep() {
+        const viewerId = localStorage.getItem('auditor_id');
+        const watchedUrl = memberSites[step];
+
+        // 🚀 ส่งแต้มไปบันทึก (Done + Received)
+        // ใช้แบบ GET ส่ง Query Params เพื่อความง่ายในการรับค่าใน Apps Script
+        fetch(`${SCRIPT_URL}?viewerId=${encodeURIComponent(viewerId)}&targetUrl=${encodeURIComponent(watchedUrl)}`, { 
+            method: 'POST',
+            mode: 'no-cors' 
+        });
+
         step++;
         document.getElementById('current-step').innerText = step;
         const btn = document.getElementById('action-btn');
@@ -104,15 +137,14 @@
 
         if (step < 3) {
             btn.disabled = false;
-            btn.innerText = `เริ่มการตรวจสอบ (SITE ${step + 1})`;
+            btn.innerText = `เริ่มตรวจสอบ (SITE ${step + 1})`;
             timerDiv.style.display = 'none';
             document.getElementById('timer').innerText = "30";
         } else {
-            document.getElementById('verify-area').style.display = 'none';
+            document.getElementById('action-area').style.display = 'none';
             document.getElementById('submit-area').style.display = 'block';
         }
     }
 </script>
-
 </body>
 </html>
