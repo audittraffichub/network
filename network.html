@@ -8,12 +8,16 @@
     <style>
         .audit-card { background: #111; border: 1px solid var(--panel-border); padding: 25px; margin: 20px 0; text-align: center; }
         .timer-display { font-size: 2.5rem; color: var(--matrix-green); margin: 15px 0; font-weight: bold; }
-        #submit-area, #action-area { display: none; }
+        
+        /* ตั้งค่าเริ่มต้นให้ซ่อนส่วนที่ยังไม่ถึงเวลาใช้ */
+        #login-area { display: block; } 
+        #action-area, #submit-area { display: none; }
+
         input[type="text"] { 
             padding: 12px; width: 80%; max-width: 300px; 
             background: #000; color: var(--matrix-green); 
             border: 1px solid var(--matrix-green); margin-bottom: 20px;
-            text-align: center; font-family: monospace;
+            text-align: center; font-family: monospace; font-size: 1.1rem;
         }
     </style>
 </head>
@@ -50,7 +54,7 @@
         <br>
         <a href="https://tally.so/r/J9kgXK" target="_blank" class="audit-btn" style="background:var(--matrix-green); color:#000;">วางลิงก์โดเมนของคุณ</a>
         <br><br>
-        <button class="audit-btn" onclick="location.reload()" style="font-size:0.7rem; padding:5px 10px;">ทำรายการใหม่</button>
+        <button class="audit-btn" onclick="resetSession()" style="font-size:0.7rem; padding:5px 10px;">ทำรายการใหม่ (เปลี่ยนชื่อ)</button>
     </div>
 </div>
 
@@ -59,18 +63,24 @@
     let timerInterval;
     let memberSites = [];
     
-    // 🔗 เปลี่ยนเป็น URL Google Script V3 ของพี่ (อันที่มี doPost)
+    // 🔗 ตรวจสอบ URL นี้ให้ชัวร์ว่าเป็น Deployment ล่าสุดของพี่นะครับ
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyL4Zeb2PTuFk3UvWrPkAiNo5_hKhMHvhPvFrcuarAWorpOA6Jbir0RhOiM5BRnIc1PiA/exec";
 
+    // ตรวจสอบสถานะเมื่อโหลดหน้าเว็บ
     window.onload = () => {
         const savedId = localStorage.getItem('auditor_id');
         if (savedId) {
             showActionArea(savedId);
+        } else {
+            // ถ้าไม่มีชื่อ ให้แสดงหน้า Login และซ่อนหน้า Action
+            document.getElementById('login-area').style.display = 'block';
+            document.getElementById('action-area').style.display = 'none';
         }
     };
 
     function saveIdentity() {
-        const id = document.getElementById('viewer-id').value.trim();
+        const idInput = document.getElementById('viewer-id');
+        const id = idInput.value.trim();
         if (id.length >= 3) {
             localStorage.setItem('auditor_id', id);
             showActionArea(id);
@@ -80,6 +90,7 @@
     }
 
     async function showActionArea(id) {
+        // สลับหน้าจอ
         document.getElementById('login-area').style.display = 'none';
         document.getElementById('action-area').style.display = 'block';
         document.getElementById('user-display').innerText = `[ USER: ${id.toUpperCase()} ]`;
@@ -88,17 +99,21 @@
         try {
             const response = await fetch(SCRIPT_URL);
             memberSites = await response.json();
-            if (memberSites.length > 0) {
+            if (memberSites && memberSites.length > 0) {
                 document.getElementById('site-title').innerText = "พร้อมทำการ Audit";
-                document.getElementById('action-btn').disabled = false;
-                document.getElementById('action-btn').innerText = "เริ่มตรวจสอบ (SITE 1)";
+                const btn = document.getElementById('action-btn');
+                btn.disabled = false;
+                btn.innerText = "เริ่มตรวจสอบ (SITE 1)";
             }
         } catch (e) {
             document.getElementById('site-title').innerText = "ERROR: ระบบฐานข้อมูลขัดข้อง";
+            console.error(e);
         }
     }
 
     function startAudit() {
+        if (step >= memberSites.length) return;
+
         const btn = document.getElementById('action-btn');
         const timerDiv = document.getElementById('timer');
         let timeLeft = 30;
@@ -108,6 +123,7 @@
         btn.disabled = true;
         btn.innerText = "กำลังวิเคราะห์โครงสร้างเว็บ...";
         timerDiv.style.display = 'block';
+        timerDiv.innerText = timeLeft;
 
         timerInterval = setInterval(() => {
             timeLeft--;
@@ -124,11 +140,15 @@
         const watchedUrl = memberSites[step];
 
         // 🚀 ส่งแต้มไปบันทึก (Done + Received)
-        // ใช้แบบ GET ส่ง Query Params เพื่อความง่ายในการรับค่าใน Apps Script
-        fetch(`${SCRIPT_URL}?viewerId=${encodeURIComponent(viewerId)}&targetUrl=${encodeURIComponent(watchedUrl)}`, { 
-            method: 'POST',
-            mode: 'no-cors' 
-        });
+        // ส่งแบบ POST พร้อม Query Params ตามที่ doPost ใน Apps Script รอรับ
+        try {
+            fetch(`${SCRIPT_URL}?viewerId=${encodeURIComponent(viewerId)}&targetUrl=${encodeURIComponent(watchedUrl)}`, { 
+                method: 'POST',
+                mode: 'no-cors' 
+            });
+        } catch (err) {
+            console.log("บันทึกแต้มดีเลย์ แต่ระบบยังไปต่อได้");
+        }
 
         step++;
         document.getElementById('current-step').innerText = step;
@@ -139,11 +159,15 @@
             btn.disabled = false;
             btn.innerText = `เริ่มตรวจสอบ (SITE ${step + 1})`;
             timerDiv.style.display = 'none';
-            document.getElementById('timer').innerText = "30";
         } else {
             document.getElementById('action-area').style.display = 'none';
             document.getElementById('submit-area').style.display = 'block';
         }
+    }
+
+    function resetSession() {
+        localStorage.removeItem('auditor_id');
+        location.reload();
     }
 </script>
 </body>
