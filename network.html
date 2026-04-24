@@ -142,23 +142,53 @@
         }, 1000);
     }
 
+    // 🚩 ประกาศตัวแปรไว้นอกฟังก์ชัน (เอาไว้บนสุดของ <script> หรือก่อนฟังก์ชันนี้ก็ได้)
+    let totalWatched = 0; 
+    const UNLOCK_AT = 5;
+
     async function completeStep() {
         const viewerId = localStorage.getItem('auditor_id');
         const watchedUrl = memberSites[step];
+
+        // 1. ส่งแต้มไปบันทึก (V5)
         fetch(`${SCRIPT_URL}?viewerId=${encodeURIComponent(viewerId)}&targetUrl=${encodeURIComponent(watchedUrl)}`, { mode: 'no-cors' });
-        step++;
-        document.getElementById('current-step').innerText = step;
+
+        step++;          // ลำดับในคิวปัจจุบัน (0, 1, 2)
+        totalWatched++;   // ยอดรวมสะสม (นับไปเรื่อยๆ ไม่รีเซ็ต)
+        
+        document.getElementById('current-step').innerText = totalWatched;
+        
         const btn = document.getElementById('action-btn');
         const timerDiv = document.getElementById('timer');
-        if (step < 3) {
-            btn.disabled = false;
-            btn.innerText = `เริ่มตรวจสอบ (SITE ${step + 1})`;
-            timerDiv.style.display = 'none';
-            showUserStats(viewerId);
-        } else {
-            document.getElementById('action-area').style.display = 'none';
-            document.getElementById('submit-area').style.display = 'block';
+
+        // 🚩 2. เช็คเงื่อนไขปลดล็อกปุ่มฝากลิงก์ (เมื่อดูครบ 5 เว็บ)
+        if (totalWatched >= UNLOCK_AT) {
+            document.getElementById('submit-area').style.display = 'block'; 
+            // เปลี่ยนข้อความปุ่ม Access Granted ให้ดูเทพขึ้น
+            const grantedH2 = document.getElementById('submit-area').querySelector('h2');
+            if(grantedH2) grantedH2.innerText = "[ UNLIMITED ACCESS GRANTED ]";
         }
+
+        // 🚩 3. ระบบวนลูปคิว (ถ้าดูจนหมด 3 ลิงก์ที่ดึงมา ให้ดึงใหม่ทันที)
+        if (step >= memberSites.length) {
+            btn.innerText = "กำลังดึงคิวใหม่...";
+            btn.disabled = true;
+            try {
+                const response = await fetch(SCRIPT_URL);
+                memberSites = await response.json();
+                step = 0; // รีเซ็ตตัวนับคิวใหม่ แต่ totalWatched ไม่รีเซ็ต
+            } catch (e) {
+                console.log("Reload queue failed");
+            }
+        }
+
+        // 4. รีเซ็ตปุ่มให้กดต่อได้ทันที (Looping)
+        btn.disabled = false;
+        btn.innerText = `ตรวจสอบเว็บต่อไป (ลำดับที่ ${totalWatched + 1})`;
+        timerDiv.style.display = 'none';
+        
+        // อัปเดตแต้มโชว์ด้านบน
+        showUserStats(viewerId); 
     }
 
     // --- Popup Functions ---
