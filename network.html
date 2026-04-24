@@ -16,6 +16,13 @@
             border: 1px solid var(--matrix-green); margin-bottom: 20px;
             text-align: center; font-family: monospace; font-size: 1.1rem;
         }
+        /* Popup Styles */
+        #submit-popup {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 90%; max-width: 400px; background: #000; border: 2px solid var(--matrix-green);
+            padding: 30px; z-index: 1000; text-align: center; box-shadow: 0 0 20px var(--matrix-green);
+        }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; }
     </style>
 </head>
 <body>
@@ -28,7 +35,7 @@
 
     <div id="login-area" class="audit-card">
         <h3>IDENTITY VERIFICATION</h3>
-        <p>ระบุ ID หรือชื่อเล่นเพื่อสะสมแต้ม (Done Points)</p>
+        <p>ระบุ ID หรือชื่อเล่นเพื่อสะสมแต้ม</p>
         <input type="text" id="viewer-id" placeholder="Enter Your ID...">
         <br>
         <button class="audit-btn" onclick="saveIdentity()">ACCESS SYSTEM</button>
@@ -47,12 +54,23 @@
 
     <div id="submit-area" class="audit-card">
         <h2 style="color:var(--matrix-green)">[ ACCESS GRANTED ]</h2>
-        <p>แต้มสะสมของคุณถูกบันทึกแล้ว คุณสามารถส่งลิงก์ได้ทันที</p>
+        <p>ระบบอนุญาตให้คุณอัปเดต URL ประจำตัวได้แล้ว</p>
         <br>
-        <a href="https://tally.so/r/J9kgXK" target="_blank" class="audit-btn" style="background:var(--matrix-green); color:#000;">วางลิงก์โดเมนของคุณ</a>
+        <button class="audit-btn" onclick="openPopup()" style="background:var(--matrix-green); color:#000;">ฝากลิงก์เว็บของคุณ</button>
         <br><br>
         <button class="audit-btn" onclick="resetSession()" style="font-size:0.7rem; padding:5px 10px;">ทำรายการใหม่ (เปลี่ยนชื่อ)</button>
     </div>
+</div>
+
+<div id="overlay" class="overlay"></div>
+<div id="submit-popup">
+    <h3 style="color:var(--matrix-green)">UPDATE YOUR URL</h3>
+    <p style="font-size: 0.8rem; color: #888;">ลิงก์นี้จะถูกนำไปสุ่มให้สมาชิกคนอื่นดู</p>
+    <input type="text" id="new-url" placeholder="https://your-website.com" style="width: 100%; margin: 15px 0; background: #111; color: #0f0; border: 1px solid #0f0; padding: 10px;">
+    <br>
+    <button class="audit-btn" onclick="submitNewUrl()">ยืนยันการบันทึก</button>
+    <p id="status-msg" style="margin-top:10px; font-size:0.8rem;"></p>
+    <button onclick="closePopup()" style="background:none; border:none; color:#555; cursor:pointer; margin-top:10px;">[ ปิดหน้าต่าง ]</button>
 </div>
 
 <script>
@@ -60,13 +78,12 @@
     let timerInterval;
     let memberSites = [];
     
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHSf8XARa2zFet611MXMm2BbP0kHlCBshzIrrh24fTfGQXHFyr6FnuTZ70ZPOOiyXHvA/exec";
+    // URL สคริปต์ล่าสุดของพี่
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxtURDP-4EBspGaJgPA1XMwJif_ktE7nNI2fr5yOmiIlsDH1PRh1KuSTQFLcNrp3y4uvg/exec";
 
     window.onload = () => {
         const savedId = localStorage.getItem('auditor_id');
-        if (savedId) {
-            showActionArea(savedId);
-        }
+        if (savedId) { showActionArea(savedId); }
     };
 
     function saveIdentity() {
@@ -75,12 +92,9 @@
         if (id.length >= 3) {
             localStorage.setItem('auditor_id', id);
             showActionArea(id);
-        } else {
-            alert("ID ต้องมีความยาวอย่างน้อย 3 ตัวอักษร");
-        }
+        } else { alert("ID ต้องมีความยาวอย่างน้อย 3 ตัวอักษร"); }
     }
 
-    // 🚩 ฟังก์ชันดึงแต้มจาก Sheets มาโชว์
     async function showUserStats(id) {
         try {
             const response = await fetch(`${SCRIPT_URL}?checkUser=${encodeURIComponent(id)}`);
@@ -99,10 +113,7 @@
     async function showActionArea(id) {
         document.getElementById('login-area').style.display = 'none';
         document.getElementById('action-area').style.display = 'block';
-        
-        // 🚀 เรียกดึงแต้มมาโชว์ทันทีที่ Login
         showUserStats(id);
-        
         try {
             const response = await fetch(SCRIPT_URL);
             memberSites = await response.json();
@@ -111,9 +122,7 @@
                 document.getElementById('action-btn').disabled = false;
                 document.getElementById('action-btn').innerText = "เริ่มตรวจสอบ (SITE 1)";
             }
-        } catch (e) {
-            document.getElementById('site-title').innerText = "ERROR: ฐานข้อมูลขัดข้อง";
-        }
+        } catch (e) { document.getElementById('site-title').innerText = "ERROR: ฐานข้อมูลขัดข้อง"; }
     }
 
     function startAudit() {
@@ -121,52 +130,63 @@
         const btn = document.getElementById('action-btn');
         const timerDiv = document.getElementById('timer');
         let timeLeft = 30;
-
         window.open(memberSites[step], '_blank');
         btn.disabled = true;
         btn.innerText = "กำลังตรวจสอบ...";
         timerDiv.style.display = 'block';
         timerDiv.innerText = timeLeft;
-
         timerInterval = setInterval(() => {
             timeLeft--;
             timerDiv.innerText = timeLeft;
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                completeStep();
-            }
+            if (timeLeft <= 0) { clearInterval(timerInterval); completeStep(); }
         }, 1000);
     }
 
     async function completeStep() {
-    const viewerId = localStorage.getItem('auditor_id');
-    const watchedUrl = memberSites[step];
-
-    // ยิงแต้มไปที่ Sheets (ไม่รอผลเพื่อความลื่นไหล)
-    fetch(`${SCRIPT_URL}?viewerId=${encodeURIComponent(viewerId)}&targetUrl=${encodeURIComponent(watchedUrl)}`, { mode: 'no-cors' });
-
-    // อัปเดตตัวเลขหน้าจอ
-    step++;
-    document.getElementById('current-step').innerText = step;
-    
-    const btn = document.getElementById('action-btn');
-    const timerDiv = document.getElementById('timer');
-
-    if (step < 3) {
-        btn.disabled = false;
-        btn.innerText = `เริ่มตรวจสอบ (SITE ${step + 1})`;
-        timerDiv.style.display = 'none';
-        showUserStats(viewerId); // อัปเดตแต้มโชว์
-    } else {
-        document.getElementById('action-area').style.display = 'none';
-        document.getElementById('submit-area').style.display = 'block';
+        const viewerId = localStorage.getItem('auditor_id');
+        const watchedUrl = memberSites[step];
+        fetch(`${SCRIPT_URL}?viewerId=${encodeURIComponent(viewerId)}&targetUrl=${encodeURIComponent(watchedUrl)}`, { mode: 'no-cors' });
+        step++;
+        document.getElementById('current-step').innerText = step;
+        const btn = document.getElementById('action-btn');
+        const timerDiv = document.getElementById('timer');
+        if (step < 3) {
+            btn.disabled = false;
+            btn.innerText = `เริ่มตรวจสอบ (SITE ${step + 1})`;
+            timerDiv.style.display = 'none';
+            showUserStats(viewerId);
+        } else {
+            document.getElementById('action-area').style.display = 'none';
+            document.getElementById('submit-area').style.display = 'block';
+        }
     }
-}
 
-    function resetSession() {
-        localStorage.removeItem('auditor_id');
-        location.reload();
+    // --- Popup Functions ---
+    function openPopup() {
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('submit-popup').style.display = 'block';
     }
+    function closePopup() {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('submit-popup').style.display = 'none';
+    }
+
+    async function submitNewUrl() {
+        const viewerId = localStorage.getItem('auditor_id');
+        const urlValue = document.getElementById('new-url').value.trim();
+        const msg = document.getElementById('status-msg');
+        if (!urlValue.includes('http')) { alert("กรุณาใส่ URL ให้ถูกต้อง"); return; }
+        msg.innerText = "กำลังบันทึกข้อมูล...";
+        try {
+            const finalUrl = `${SCRIPT_URL}?viewerId=${encodeURIComponent(viewerId)}&updateMyUrl=${encodeURIComponent(urlValue)}`;
+            await fetch(finalUrl, { mode: 'no-cors' });
+            msg.style.color = "var(--matrix-green)";
+            msg.innerText = "บันทึกสำเร็จ! ลิงก์เข้าสู่คลังแล้ว";
+            setTimeout(() => { location.reload(); }, 2000);
+        } catch (e) { msg.innerText = "เกิดข้อผิดพลาด"; }
+    }
+
+    function resetSession() { localStorage.removeItem('auditor_id'); location.reload(); }
 </script>
 </body>
 </html>
