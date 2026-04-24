@@ -135,35 +135,29 @@
         }, 1000);
     }
 
-    async function completeStep() {
-        const viewerId = localStorage.getItem('auditor_id');
-        const watchedUrl = memberSites[step];
+async function completeStep() {
+    const viewerId = localStorage.getItem('auditor_id');
+    const watchedUrl = memberSites[step];
 
-        // 🚀 ส่งแต้มไปบันทึก (Done + Received)
-        // ส่งแบบ POST พร้อม Query Params ตามที่ doPost ใน Apps Script รอรับ
-        try {
-            fetch(`${SCRIPT_URL}?viewerId=${encodeURIComponent(viewerId)}&targetUrl=${encodeURIComponent(watchedUrl)}`, { 
-                method: 'POST',
-                mode: 'no-cors' 
-            });
-        } catch (err) {
-            console.log("บันทึกแต้มดีเลย์ แต่ระบบยังไปต่อได้");
-        }
+    // 🚀 ส่งแต้มแบบ GET (ชัวร์กว่าสำหรับ Apps Script 0 บาท)
+    const updateUrl = `${SCRIPT_URL}?viewerId=${encodeURIComponent(viewerId)}&targetUrl=${encodeURIComponent(watchedUrl)}`;
+    
+    fetch(updateUrl); // ยิงไปเฉยๆ ไม่ต้องรอผล เพื่อความไว
 
-        step++;
-        document.getElementById('current-step').innerText = step;
-        const btn = document.getElementById('action-btn');
-        const timerDiv = document.getElementById('timer');
+    step++;
+    document.getElementById('current-step').innerText = step;
+    const btn = document.getElementById('action-btn');
+    const timerDiv = document.getElementById('timer');
 
-        if (step < 3) {
-            btn.disabled = false;
-            btn.innerText = `เริ่มตรวจสอบ (SITE ${step + 1})`;
-            timerDiv.style.display = 'none';
-        } else {
-            document.getElementById('action-area').style.display = 'none';
-            document.getElementById('submit-area').style.display = 'block';
-        }
+    if (step < 3) {
+        btn.disabled = false;
+        btn.innerText = `เริ่มตรวจสอบ (SITE ${step + 1})`;
+        timerDiv.style.display = 'none';
+    } else {
+        document.getElementById('action-area').style.display = 'none';
+        document.getElementById('submit-area').style.display = 'block';
     }
+}
 
     function resetSession() {
         localStorage.removeItem('auditor_id');
