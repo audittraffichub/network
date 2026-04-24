@@ -42,7 +42,6 @@
         </div>
         <div class="audit-card">
             <h3 id="site-title">พร้อมทำการ Audit</h3>
-            
             <div id="timer" class="timer-display" style="display:none;">30</div>
             
             <div id="feedback-section">
@@ -87,7 +86,6 @@
     let timerInterval;
     let memberSites = [];
     const UNLOCK_AT = 5;
-    
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxjfMIiIfxSN_HbPt7c-pMItUAOQuzclTpiSvA4i91aLJ1QRFUAfzsw77xAdJfAC7VF3Q/exec";
 
     window.onload = () => {
@@ -130,13 +128,11 @@
         const btn = document.getElementById('action-btn');
         const timerDiv = document.getElementById('timer');
         let timeLeft = 30;
-
         window.open(memberSites[step], '_blank');
         btn.disabled = true;
         btn.innerText = "กำลังตรวจสอบ...";
         timerDiv.style.display = 'block';
         timerDiv.innerText = timeLeft;
-
         timerInterval = setInterval(() => {
             timeLeft--;
             timerDiv.innerText = timeLeft;
@@ -153,44 +149,58 @@
         document.getElementById('feedback-section').style.display = 'block';
     }
 
+    // 🚩 ฟังก์ชันฉบับแก้ไข: ส่งคอมเมนต์ชัวร์ + ปลดล็อกปุ่ม
     async function submitFeedbackAndNext() {
-        const feedback = document.getElementById('feedback-text').value.trim();
-        if (feedback.length < 5) { alert("กรุณาพิมพ์คำแนะนำอย่างน้อย 5 ตัวอักษร"); return; }
+        const feedbackBox = document.getElementById('feedback-text');
+        const feedback = feedbackBox.value.trim();
+        
+        if (feedback.length < 5) { 
+            alert("กรุณาพิมพ์คำแนะนำอย่างน้อย 5 ตัวอักษร"); 
+            return; 
+        }
 
         const viewerId = localStorage.getItem('auditor_id');
         const watchedUrl = memberSites[step];
 
-        fetch(`${SCRIPT_URL}?viewerId=${encodeURIComponent(viewerId)}&targetUrl=${encodeURIComponent(watchedUrl)}&feedback=${encodeURIComponent(feedback)}`, { mode: 'no-cors' });
-
-        document.getElementById('feedback-text').value = "";
-        document.getElementById('feedback-section').style.display = 'none';
-        document.getElementById('action-btn').style.display = 'inline-block';
-        completeStep();
+        try {
+            // ยิงข้อมูลไปที่ Apps Script
+            const url = `${SCRIPT_URL}?viewerId=${encodeURIComponent(viewerId)}&targetUrl=${encodeURIComponent(watchedUrl)}&feedback=${encodeURIComponent(feedback)}`;
+            await fetch(url, { mode: 'no-cors' });
+            
+            // ล้างค่าและสลับ UI
+            feedbackBox.value = "";
+            document.getElementById('feedback-section').style.display = 'none';
+            const btn = document.getElementById('action-btn');
+            btn.style.display = 'inline-block';
+            btn.disabled = false; // ✅ ปลดล็อกปุ่มเริ่มตรวจสอบเว็บถัดไป
+            
+            completeStep(); 
+        } catch (e) {
+            alert("การเชื่อมต่อขัดข้อง กรุณาลองส่งใหม่อีกครั้ง");
+        }
     }
 
     function completeStep() {
         step++;
         totalWatched++;
         document.getElementById('current-step').innerText = totalWatched;
-        
-        if (totalWatched >= UNLOCK_AT) {
-            document.getElementById('submit-area').style.display = 'block';
-        }
-
-        if (step >= memberSites.length) {
-            refreshQueue();
-        } else {
+        if (totalWatched >= UNLOCK_AT) { document.getElementById('submit-area').style.display = 'block'; }
+        if (step >= memberSites.length) { refreshQueue(); } 
+        else {
             document.getElementById('action-btn').innerText = `ตรวจสอบเว็บต่อไป (ลำดับที่ ${totalWatched + 1})`;
             showUserStats(localStorage.getItem('auditor_id'));
         }
     }
 
     async function refreshQueue() {
-        document.getElementById('action-btn').innerText = "กำลังดึงคิวใหม่...";
+        const btn = document.getElementById('action-btn');
+        btn.innerText = "กำลังดึงคิวใหม่...";
+        btn.disabled = true;
         const response = await fetch(SCRIPT_URL);
         memberSites = await response.json();
         step = 0;
-        document.getElementById('action-btn').innerText = `ตรวจสอบเว็บต่อไป (ลำดับที่ ${totalWatched + 1})`;
+        btn.disabled = false;
+        btn.innerText = `ตรวจสอบเว็บต่อไป (ลำดับที่ ${totalWatched + 1})`;
     }
 
     async function loadMyFeedback() {
