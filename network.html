@@ -139,29 +139,29 @@
     }
 
     async function completeStep() {
-        const viewerId = localStorage.getItem('auditor_id');
-        const watchedUrl = memberSites[step];
+    const viewerId = localStorage.getItem('auditor_id');
+    const watchedUrl = memberSites[step];
 
-        const updateUrl = `${SCRIPT_URL}?viewerId=${encodeURIComponent(viewerId)}&targetUrl=${encodeURIComponent(watchedUrl)}`;
-        await fetch(updateUrl); 
+    // ยิงแต้มไปที่ Sheets (ไม่รอผลเพื่อความลื่นไหล)
+    fetch(`${SCRIPT_URL}?viewerId=${encodeURIComponent(viewerId)}&targetUrl=${encodeURIComponent(watchedUrl)}`, { mode: 'no-cors' });
 
-        // 🚀 ดูจบ 1 เว็บ ให้อัปเดตตัวเลขแต้มบนหน้าจอทันที
-        showUserStats(viewerId);
+    // อัปเดตตัวเลขหน้าจอ
+    step++;
+    document.getElementById('current-step').innerText = step;
+    
+    const btn = document.getElementById('action-btn');
+    const timerDiv = document.getElementById('timer');
 
-        step++;
-        document.getElementById('current-step').innerText = step;
-        const btn = document.getElementById('action-btn');
-        const timerDiv = document.getElementById('timer');
-
-        if (step < 3) {
-            btn.disabled = false;
-            btn.innerText = `เริ่มตรวจสอบ (SITE ${step + 1})`;
-            timerDiv.style.display = 'none';
-        } else {
-            document.getElementById('action-area').style.display = 'none';
-            document.getElementById('submit-area').style.display = 'block';
-        }
+    if (step < 3) {
+        btn.disabled = false;
+        btn.innerText = `เริ่มตรวจสอบ (SITE ${step + 1})`;
+        timerDiv.style.display = 'none';
+        showUserStats(viewerId); // อัปเดตแต้มโชว์
+    } else {
+        document.getElementById('action-area').style.display = 'none';
+        document.getElementById('submit-area').style.display = 'block';
     }
+}
 
     function resetSession() {
         localStorage.removeItem('auditor_id');
