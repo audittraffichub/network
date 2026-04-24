@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AUDIT PROTOCOL | bugtraderyai</title>
+    <title>AUDIT PROTOCOL | TEAM AUDIT TRAFFIC HUB</title>
     
     <style>
         :root {
@@ -72,6 +72,7 @@
             border: 1px solid #ff4d4d;
             padding: 15px;
             margin-top: 30px;
+            text-align: center;
         }
 
         .footer-note {
@@ -80,20 +81,39 @@
             color: #555;
             margin-top: 40px;
         }
+
+        .highlight {
+            color: var(--matrix-green);
+            font-weight: bold;
+        }
+
+        .nav-btn {
+            display: inline-block;
+            color: var(--matrix-green);
+            text-decoration: none;
+            border: 1px solid var(--matrix-green);
+            padding: 10px 20px;
+            transition: all 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: var(--matrix-green);
+            color: #000;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>Protocol & Rules</h1>
-    <p style="text-align:center; color: #888;">[ Version 1.0.26 - Traffic Exchange Policy ]</p>
+    <p style="text-align:center; color: #888;">[ Version 1.1.0 - TEAM AUDIT TRAFFIC HUB ]</p>
 
     <div class="section">
-        <h2>01. ระบบการแลกเปลี่ยน (The Exchange)</h2>
+        <h2>01. ระบบการแลกเปลี่ยน (The Unlimited Loop)</h2>
         <ul>
-            <li>สมาชิกต้องทำการ "Audit" (เข้าชม) เว็บไซต์ในระบบครบ 3 เว็บตามที่ระบุ</li>
-            <li>ต้องคงสถานะการเข้าชมหน้าเว็บนั้นๆ อย่างน้อย 30 วินาที เพื่อให้ระบบนับแต้ม (Credit)</li>
-            <li>ระบบใช้หลักการ "Fair Queue" คนที่ช่วยผู้อื่นมากที่สุด จะถูกดันขึ้นอันดับ 1 ของคิวเสมอ</li>
+            <li>สมาชิกต้องทำการ "Audit" (เข้าชม) เว็บไซต์ในระบบอย่างน้อย <span class="highlight">5 เว็บไซต์</span> เพื่อปลดล็อกสิทธิ์การฝากลิงก์</li>
+            <li>ต้องคงสถานะการเข้าชมอย่างน้อย <span class="highlight">30 วินาทีต่อเว็บ</span> เพื่อบันทึกแต้มเข้าระบบ</li>
+            <li><span class="highlight">Unlimited Audit:</span> ยิ่งคุณตรวจสอบมาก ชื่อโดเมนของคุณจะปรากฏในคลังแสงหนาแน่นกว่าผู้อื่น เพิ่มโอกาสการได้รับ Traffic</li>
         </ul>
     </div>
 
@@ -102,27 +122,31 @@
         <ul>
             <li>อนุญาตเฉพาะเว็บไซต์ที่มีเนื้อหาคุณภาพ หรือหน้า Landing Page ที่เป็นประโยชน์</li>
             <li><strong>ห้ามเด็ดขาด:</strong> เว็บพนัน, สื่อลามก, เว็บหลอกลวง (Phishing), หรือเว็บที่มีสคริปต์อันตราย</li>
-            <li>โดเมนที่นำมาฝากต้องมีสถานะออนไลน์ (Up-time) จริงเท่านั้น</li>
+            <li>ลิงก์ที่นำมาฝากต้องเป็น URL ที่เข้าถึงได้จริงและปลอดภัยต่อผู้เข้าชม</li>
         </ul>
     </div>
 
     <div class="section">
-        <h2>03. การควบคุมคุณภาพ (Quality Control)</h2>
+        <h2>03. อัลกอริทึมความยุติธรรม (Fairness Logic)</h2>
         <ul>
-            <li>หากระบบตรวจพบการใช้ Bot หรือ Software เพื่อปั่นยอดคลิก บัญชีจะถูกแบนถาวร</li>
-            <li>ห้ามใช้ลิงก์ส่งต่อไปยังหน้าเว็บอื่น (Redirect) เกิน 1 ชั้น</li>
-            <li>Admin มีสิทธิ์ลบลิงก์ที่ "ไม่มีคุณภาพ" ออกจากระบบโดยไม่ต้องแจ้งล่วงหน้า</li>
+            <li>ระบบใช้หลักการ <span class="highlight">"Proof of Work"</span> ยิ่งช่วยผู้อื่นมาก ระบบจะช่วยผลักดันคุณมากเท่านั้น</li>
+            <li>การพยายามใช้ Bot หรือ Bypass ระบบ จะส่งผลให้แต้มไม่ถูกนับโดยอัตโนมัติ</li>
+            <li>ทีมงานขอสงวนสิทธิ์ในการคัดกรองและลบลิงก์ที่ผิดกฎออกจากระบบโดยไม่ต้องแจ้งล่วงหน้า</li>
         </ul>
     </div>
 
     <div class="warning">
         [ CRITICAL WARNING ]<br>
-        การละเมิดกฎจะส่งผลให้โดเมนของคุณถูก "Blacklist" จากเครือข่าย Auditor ทันที 
-        และจะไม่สามารถขอรับ Traffic คืนได้ไม่ว่ากรณีใดๆ
+        การละเมิดกฎหรือความพยายามแทรกแซงระบบ <br>
+        จะส่งผลให้ ID และ Domain ถูก Blacklist จากเครือข่ายถาวร
+    </div>
+
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="network.html" class="nav-btn">กลับสู่หน้า EXCHANGE</a>
     </div>
 
     <div class="footer-note">
-        &copy; 2026 BUGTRADERYAI | NETWORK INTEGRITY VERIFIED
+        &copy; 2026 TEAM AUDIT TRAFFIC HUB | NETWORK INTEGRITY VERIFIED
     </div>
 </div>
 
