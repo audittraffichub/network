@@ -8,11 +8,8 @@
     <style>
         .audit-card { background: #111; border: 1px solid var(--panel-border); padding: 25px; margin: 20px 0; text-align: center; }
         .timer-display { font-size: 2.5rem; color: var(--matrix-green); margin: 15px 0; font-weight: bold; }
-        
-        /* ตั้งค่าเริ่มต้นให้ซ่อนส่วนที่ยังไม่ถึงเวลาใช้ */
         #login-area { display: block; } 
         #action-area, #submit-area { display: none; }
-
         input[type="text"] { 
             padding: 12px; width: 80%; max-width: 300px; 
             background: #000; color: var(--matrix-green); 
@@ -26,7 +23,7 @@
 <div class="container">
     <header class="header">
         <h1 class="matrix-title">TRAFFIC ENGINE V2</h1>
-        <p id="user-display" style="color: #666;">[ SYSTEM: STANDBY ]</p>
+        <p id="user-display" style="color: #666; line-height: 1.5;">[ SYSTEM: STANDBY ]</p>
     </header>
 
     <div id="login-area" class="audit-card">
@@ -63,18 +60,12 @@
     let timerInterval;
     let memberSites = [];
     
-    // 🔗 ตรวจสอบ URL นี้ให้ชัวร์ว่าเป็น Deployment ล่าสุดของพี่นะครับ
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxtURDP-4EBspGaJgPA1XMwJif_ktE7nNI2fr5yOmiIlsDH1PRh1KuSTQFLcNrp3y4uvg/exec";
 
-    // ตรวจสอบสถานะเมื่อโหลดหน้าเว็บ
     window.onload = () => {
         const savedId = localStorage.getItem('auditor_id');
         if (savedId) {
             showActionArea(savedId);
-        } else {
-            // ถ้าไม่มีชื่อ ให้แสดงหน้า Login และซ่อนหน้า Action
-            document.getElementById('login-area').style.display = 'block';
-            document.getElementById('action-area').style.display = 'none';
         }
     };
 
@@ -89,39 +80,51 @@
         }
     }
 
+    // 🚩 ฟังก์ชันดึงแต้มจาก Sheets มาโชว์
+    async function showUserStats(id) {
+        try {
+            const response = await fetch(`${SCRIPT_URL}?checkUser=${encodeURIComponent(id)}`);
+            const stats = await response.json();
+            if(stats) {
+                document.getElementById('user-display').innerHTML = `
+                    [ USER: ${id.toUpperCase()} ] <br>
+                    <span style="color:var(--matrix-green); font-size:0.8rem; letter-spacing:1px;">
+                        ช่วยเพื่อนแล้ว: ${stats.done} ครั้ง | เว็บคุณถูกดู: ${stats.received} ครั้ง
+                    </span>
+                `;
+            }
+        } catch (e) { console.log("Stats update delayed"); }
+    }
+
     async function showActionArea(id) {
-        // สลับหน้าจอ
         document.getElementById('login-area').style.display = 'none';
         document.getElementById('action-area').style.display = 'block';
-        document.getElementById('user-display').innerText = `[ USER: ${id.toUpperCase()} ]`;
         
-        // ดึงคิวจาก Sheets
+        // 🚀 เรียกดึงแต้มมาโชว์ทันทีที่ Login
+        showUserStats(id);
+        
         try {
             const response = await fetch(SCRIPT_URL);
             memberSites = await response.json();
             if (memberSites && memberSites.length > 0) {
                 document.getElementById('site-title').innerText = "พร้อมทำการ Audit";
-                const btn = document.getElementById('action-btn');
-                btn.disabled = false;
-                btn.innerText = "เริ่มตรวจสอบ (SITE 1)";
+                document.getElementById('action-btn').disabled = false;
+                document.getElementById('action-btn').innerText = "เริ่มตรวจสอบ (SITE 1)";
             }
         } catch (e) {
-            document.getElementById('site-title').innerText = "ERROR: ระบบฐานข้อมูลขัดข้อง";
-            console.error(e);
+            document.getElementById('site-title').innerText = "ERROR: ฐานข้อมูลขัดข้อง";
         }
     }
 
     function startAudit() {
         if (step >= memberSites.length) return;
-
         const btn = document.getElementById('action-btn');
         const timerDiv = document.getElementById('timer');
         let timeLeft = 30;
 
         window.open(memberSites[step], '_blank');
-
         btn.disabled = true;
-        btn.innerText = "กำลังวิเคราะห์โครงสร้างเว็บ...";
+        btn.innerText = "กำลังตรวจสอบ...";
         timerDiv.style.display = 'block';
         timerDiv.innerText = timeLeft;
 
@@ -135,29 +138,30 @@
         }, 1000);
     }
 
-async function completeStep() {
-    const viewerId = localStorage.getItem('auditor_id');
-    const watchedUrl = memberSites[step];
+    async function completeStep() {
+        const viewerId = localStorage.getItem('auditor_id');
+        const watchedUrl = memberSites[step];
 
-    // 🚀 ส่งแต้มแบบ GET (ชัวร์กว่าสำหรับ Apps Script 0 บาท)
-    const updateUrl = `${SCRIPT_URL}?viewerId=${encodeURIComponent(viewerId)}&targetUrl=${encodeURIComponent(watchedUrl)}`;
-    
-    fetch(updateUrl); // ยิงไปเฉยๆ ไม่ต้องรอผล เพื่อความไว
+        const updateUrl = `${SCRIPT_URL}?viewerId=${encodeURIComponent(viewerId)}&targetUrl=${encodeURIComponent(watchedUrl)}`;
+        await fetch(updateUrl); 
 
-    step++;
-    document.getElementById('current-step').innerText = step;
-    const btn = document.getElementById('action-btn');
-    const timerDiv = document.getElementById('timer');
+        // 🚀 ดูจบ 1 เว็บ ให้อัปเดตตัวเลขแต้มบนหน้าจอทันที
+        showUserStats(viewerId);
 
-    if (step < 3) {
-        btn.disabled = false;
-        btn.innerText = `เริ่มตรวจสอบ (SITE ${step + 1})`;
-        timerDiv.style.display = 'none';
-    } else {
-        document.getElementById('action-area').style.display = 'none';
-        document.getElementById('submit-area').style.display = 'block';
+        step++;
+        document.getElementById('current-step').innerText = step;
+        const btn = document.getElementById('action-btn');
+        const timerDiv = document.getElementById('timer');
+
+        if (step < 3) {
+            btn.disabled = false;
+            btn.innerText = `เริ่มตรวจสอบ (SITE ${step + 1})`;
+            timerDiv.style.display = 'none';
+        } else {
+            document.getElementById('action-area').style.display = 'none';
+            document.getElementById('submit-area').style.display = 'block';
+        }
     }
-}
 
     function resetSession() {
         localStorage.removeItem('auditor_id');
