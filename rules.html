@@ -3,152 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AUDIT PROTOCOL | TEAM AUDIT TRAFFIC HUB</title>
-    
+    <title>PROTOCOL & RULES | TEAM AUDIT TRAFFIC HUB</title>
+    <link rel="stylesheet" href="style.css">
     <style>
-        :root {
-            --matrix-green: #00ff41;
-            --dark-bg: #050505;
+        .rules-container { max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; }
+        .rule-card { 
+            background: #0a0a0a; 
+            border-left: 3px solid var(--matrix-green); 
+            padding: 25px; 
+            margin-bottom: 20px; 
+            border-top: 1px solid #111; 
+            border-right: 1px solid #111; 
+            border-bottom: 1px solid #111; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
-
-        body {
-            margin: 0;
-            background-color: var(--dark-bg);
-            color: #e0e0e0;
-            font-family: 'Courier New', Courier, monospace;
-            padding: 40px 20px;
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: auto;
-            border: 1px solid #333;
-            padding: 30px;
-            background: #0a0a0a;
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.05);
-        }
-
-        h1 {
-            color: var(--matrix-green);
-            font-size: 1.8rem;
+        .warning-box { 
+            border: 1px solid #ff4444; 
+            padding: 20px; 
+            color: #ff4444; 
+            font-size: 0.9rem; 
+            margin-top: 30px; 
+            background: rgba(255, 68, 68, 0.05); 
             text-align: center;
-            border-bottom: 2px solid var(--matrix-green);
-            padding-bottom: 15px;
-            text-transform: uppercase;
+            line-height: 1.8;
         }
-
-        .section {
-            margin: 25px 0;
-        }
-
-        h2 {
-            color: var(--matrix-green);
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-        }
-
-        ul {
-            list-style: none;
-            padding-left: 0;
-        }
-
-        li {
-            margin-bottom: 10px;
-            padding-left: 20px;
-            position: relative;
-        }
-
-        li::before {
-            content: ">";
-            position: absolute;
-            left: 0;
-            color: var(--matrix-green);
-        }
-
-        .warning {
-            color: #ff4d4d;
-            font-weight: bold;
-            border: 1px solid #ff4d4d;
-            padding: 15px;
-            margin-top: 30px;
-            text-align: center;
-        }
-
-        .footer-note {
-            text-align: center;
-            font-size: 0.8rem;
-            color: #555;
-            margin-top: 40px;
-        }
-
-        .highlight {
-            color: var(--matrix-green);
-            font-weight: bold;
-        }
-
-        .nav-btn {
-            display: inline-block;
-            color: var(--matrix-green);
-            text-decoration: none;
-            border: 1px solid var(--matrix-green);
-            padding: 10px 20px;
-            transition: all 0.3s;
-        }
-
-        .nav-btn:hover {
-            background: var(--matrix-green);
-            color: #000;
-        }
+        .highlight { color: var(--matrix-green); font-weight: bold; }
+        h3 { margin-top: 0; color: var(--matrix-green); letter-spacing: 1px; }
+        ul { list-style: none; padding: 0; }
+        li { margin-bottom: 10px; padding-left: 20px; position: relative; }
+        li::before { content: ">"; position: absolute; left: 0; color: var(--matrix-green); }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Protocol & Rules</h1>
-    <p style="text-align:center; color: #888;">[ Version 1.1.0 - TEAM AUDIT TRAFFIC HUB ]</p>
+<div class="container rules-container">
+    <h1 class="matrix-title" style="text-align: center;">[ SYSTEM PROTOCOL ]</h1>
+    <p style="text-align:center; color: #888; margin-bottom: 40px;">Version 1.2.0 | NETWORK INTEGRITY VERIFIED</p>
 
-    <div class="section">
-        <h2>01. ระบบการแลกเปลี่ยน (The Unlimited Loop)</h2>
+    <div class="rule-card">
+        <h3>01. นิยามของระบบ (SYSTEM DEFINITION)</h3>
+        <p>TEAM AUDIT TRAFFIC HUB คือเครือข่าย <span class="highlight">"Feedback Hub"</span> ที่มีวัตถุประสงค์เพื่อตรวจสอบความสวยงาม การจัดวาง UI/UX และค้นหาจุดบกพร่องของเว็บไซต์สมาชิก (<span class="highlight">Quality Verification</span>) โดยใช้มนุษย์จริงๆ ในการตรวจสอบข้อมูล</p>
+    </div>
+
+    <div class="rule-card">
+        <h3>02. อัลกอริทึมการแลกเปลี่ยน (PROOF OF WORK)</h3>
         <ul>
-            <li>สมาชิกต้องทำการ "Audit" (เข้าชม) เว็บไซต์ในระบบอย่างน้อย <span class="highlight">5 เว็บไซต์</span> เพื่อปลดล็อกสิทธิ์การฝากลิงก์</li>
-            <li>ต้องคงสถานะการเข้าชมอย่างน้อย <span class="highlight">30 วินาทีต่อเว็บ</span> เพื่อบันทึกแต้มเข้าระบบ</li>
-            <li><span class="highlight">Unlimited Audit:</span> ยิ่งคุณตรวจสอบมาก ชื่อโดเมนของคุณจะปรากฏในคลังแสงหนาแน่นกว่าผู้อื่น เพิ่มโอกาสการได้รับ Traffic</li>
+            <li>สมาชิกต้องทำการ Audit เว็บไซต์ในระบบอย่างน้อย <span class="highlight">5 เว็บไซต์</span> เพื่อปลดล็อกสิทธิ์การฝากลิงก์</li>
+            <li>ต้องเข้าชมอย่างน้อย <span class="highlight">30 วินาทีต่อเว็บไซต์</span> และมอบคำแนะนำที่เป็นประโยชน์เพื่อบันทึกแต้ม</li>
+            <li><span class="highlight">Unlimited Loop:</span> ยิ่งคุณตรวจสอบมาก ชื่อเว็บของคุณจะปรากฏในคลังข้อมูลหนาแน่นขึ้น เพิ่มโอกาสการได้รับ Traffic คุณภาพกลับคืน</li>
         </ul>
     </div>
 
-    <div class="section">
-        <h2>02. ข้อกำหนดเนื้อหา (Content Policy)</h2>
+    <div class="rule-card">
+        <h3>03. นโยบายเนื้อหา (CONTENT POLICY)</h3>
         <ul>
-            <li>อนุญาตเฉพาะเว็บไซต์ที่มีเนื้อหาคุณภาพ หรือหน้า Landing Page ที่เป็นประโยชน์</li>
-            <li><strong>ห้ามเด็ดขาด:</strong> เว็บพนัน, สื่อลามก, เว็บหลอกลวง (Phishing), หรือเว็บที่มีสคริปต์อันตราย</li>
-            <li>ลิงก์ที่นำมาฝากต้องเป็น URL ที่เข้าถึงได้จริงและปลอดภัยต่อผู้เข้าชม</li>
+            <li>อนุญาตเฉพาะเว็บไซต์ที่มีเนื้อหาคุณภาพ หรือหน้า Landing Page ที่ปลอดภัย</li>
+            <li><span style="color: #ff4444;">ห้ามเด็ดขาด:</span> เว็บพนัน, สื่อลามก, เว็บหลอกลวง (Phishing), หรือเว็บที่มีสคริปต์อันตราย</li>
+            <li>การพยายามใช้ Bot หรือ Bypass ระบบ จะส่งผลให้ ID ของท่านถูกระงับโดยอัตโนมัติ</li>
         </ul>
     </div>
 
-    <div class="section">
-        <h2>03. อัลกอริทึมความยุติธรรม (Fairness Logic)</h2>
-        <ul>
-            <li>ระบบใช้หลักการ <span class="highlight">"Proof of Work"</span> ยิ่งช่วยผู้อื่นมาก ระบบจะช่วยผลักดันคุณมากเท่านั้น</li>
-            <li>การพยายามใช้ Bot หรือ Bypass ระบบ จะส่งผลให้แต้มไม่ถูกนับโดยอัตโนมัติ</li>
-            <li>ทีมงานขอสงวนสิทธิ์ในการคัดกรองและลบลิงก์ที่ผิดกฎออกจากระบบโดยไม่ต้องแจ้งล่วงหน้า</li>
-        </ul>
+    <div class="warning-box">
+        <strong style="font-size: 1.1rem;">[ CRITICAL SECURITY ALERT ]</strong><br><br>
+        ระบบนี้มีไว้เพื่อตรวจสอบความสวยงามและติชมเว็บไซต์เท่านั้น <br>
+        <span class="highlight" style="text-decoration: underline; color: #ff4444;">ไม่แนะนำให้ใช้เพื่อวัตถุประสงค์ในการปั๊มยอดวิวโฆษณา (เช่น Google AdSense) โดยตรง</span> <br>
+        การใช้งานผิดประเภทอาจส่งผลกระทบต่อบัญชีโฆษณาของท่าน <br>
+        ทางเครือข่ายจะไม่รับผิดชอบต่อความเสียหายที่เกิดจากการใช้งานที่ผิดวัตถุประสงค์ในทุกกรณี
     </div>
 
-    <div class="warning">
-        [ CRITICAL WARNING ]<br>
-        การละเมิดกฎหรือความพยายามแทรกแซงระบบ <br>
-        จะส่งผลให้ ID และ Domain ถูก Blacklist จากเครือข่ายถาวร
-    </div>
-
-    <div style="text-align: center; margin-top: 30px;">
-        <a href="network.html" class="nav-btn">กลับสู่หน้า EXCHANGE</a>
-    </div>
-
-    <div class="footer-note">
-        &copy; 2026 TEAM AUDIT TRAFFIC HUB | NETWORK INTEGRITY VERIFIED
+    <div style="text-align: center; margin-top: 40px; display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+        <a href="index.html" class="audit-btn">กลับสู่หน้าหลัก</a>
+        <a href="network.html" class="audit-btn" style="background: var(--matrix-green); color: #000;">ยอมรับและเข้าสู่ EXCHANGE</a>
     </div>
 </div>
+
+<footer style="text-align: center; padding: 40px; color: #333; font-size: 0.7rem;">
+    &copy; 2026 TEAM AUDIT TRAFFIC HUB | PROTOCOL ENFORCED
+</footer>
 
 </body>
 </html>
