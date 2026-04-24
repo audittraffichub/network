@@ -1,73 +1,104 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AUDIT TRAFFIC NETWORK | audittraffichub</title>
+<style>
+    .sponsor-section {
+        margin-top: 60px;
+        width: 100%;
+        max-width: 800px;
+        border-top: 1px solid #222;
+        padding-top: 40px;
+    }
+
+    .sponsor-grid {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 40px;
+    }
+
+    .sponsor-slot {
+        width: 220px;
+        height: 80px;
+        border: 1px dashed #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #444;
+        font-size: 0.8rem;
+        transition: 0.3s;
+    }
+
+    .sponsor-slot:hover {
+        border-color: var(--matrix-green);
+        color: var(--matrix-green);
+        cursor: pointer;
+    }
+
+    .contact-form {
+        background: #0a0a0a;
+        padding: 20px;
+        border: 1px solid #111;
+        text-align: left;
+    }
+
+    .contact-form input, .contact-form textarea {
+        width: 100%;
+        background: #000;
+        border: 1px solid #222;
+        color: var(--matrix-green);
+        padding: 10px;
+        margin-bottom: 10px;
+        font-family: monospace;
+    }
+</style>
+
+<div class="sponsor-section">
+    <h3 style="color: #444; font-size: 0.8rem; letter-spacing: 3px; margin-bottom: 20px;">OUR SUPPORTERS</h3>
     
-    <link rel="stylesheet" href="style.css">
-
-    <style>
-        .hero-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 80vh;
-            text-align: center;
-        }
-
-        .system-status {
-            color: var(--matrix-green);
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-            letter-spacing: 2px;
-        }
-
-        .description {
-            max-width: 650px;
-            color: #888;
-            margin: 20px 0 40px 0;
-            font-size: 1.1rem;
-        }
-
-        .glitch-text {
-            animation: glitch 2s infinite;
-        }
-
-        @keyframes glitch {
-            0% { text-shadow: 2px 0 red; }
-            50% { text-shadow: -2px 0 blue; }
-            100% { text-shadow: 2px 0 red; }
-        }
-    </style>
-</head>
-<body>
-
-<div class="container hero-section">
-    <div class="system-status">[ SYSTEM ONLINE - NODE: 01 ]</div>
-    <h1 class="matrix-title glitch-text">AUDITOR TRAFFIC EXCHANGE</h1>
-    
-    <p class="description">
-        ยินดีต้อนรับสู่เครือข่ายแลกเปลี่ยนทราฟฟิกคุณภาพสูง <br>
-        ระบบจะทำการตรวจสอบ (Audit) ความถูกต้องของทุกการเข้าชม <br>
-        เพื่อให้แน่ใจว่าเว็บไซต์ของคุณได้รับ "คน" ไม่ใช่ "บอท"
-    </p>
-
-    <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
-        <a href="rules.html" class="audit-btn">อ่านกฎระเบียบ (PROTOCOL)</a>
-        
-        <a href="network.html" class="audit-btn" style="background: var(--matrix-green); color: #000;">เข้าสู่ระบบ EXCHANGE</a>
+    <div class="sponsor-grid">
+        <div class="sponsor-slot">[ SPONSOR SLOT 01 ]</div>
+        <div class="sponsor-slot">[ SPONSOR SLOT 02 ]</div>
+        <div class="sponsor-slot">[ SPONSOR SLOT 03 ]</div>
     </div>
 
-    <div style="margin-top: 50px; color: #444; font-size: 0.8rem;">
-        ID: 0x8234-TRAFFIC-READY | ENCRYPTION: ACTIVE
+    <div class="contact-form">
+        <h4 style="color: var(--matrix-green); margin-top: 0;">CONTACT FOR SPONSORSHIP</h4>
+        <p style="font-size: 0.7rem; color: #666;">ส่งรายละเอียดของคุณเพื่อลงโฆษณาในเครือข่ายของเรา</p>
+        
+        <input type="text" id="s-name" placeholder="ชื่อหรือแบรนด์ของคุณ...">
+        <input type="text" id="s-contact" placeholder="Line ID / Email / เบอร์โทรศัพท์...">
+        <textarea id="s-msg" rows="3" placeholder="ข้อความเพิ่มเติม (ถ้ามี)..."></textarea>
+        
+        <button onclick="sendSponsorContact()" class="audit-btn" style="width: 100%; font-size: 0.8rem;">SEND PROPOSAL</button>
+        <p id="s-status" style="font-size: 0.7rem; text-align: center; margin-top: 10px;"></p>
     </div>
 </div>
 
-<footer style="text-align: center; padding: 20px; color: #333; font-size: 0.7rem;">
-    &copy; 2026 AUDIT TRAFFIC HUB - ALL RIGHTS RESERVED
-</footer>
+<script>
+    async function sendSponsorContact() {
+        const name = document.getElementById('s-name').value.trim();
+        const contact = document.getElementById('s-contact').value.trim();
+        const msg = document.getElementById('s-msg').value.trim();
+        const status = document.getElementById('s-status');
+        const SCRIPT_URL = "URL_APPS_SCRIPT_ของพี่"; // อย่าลืมใส่ URL ล่าสุดนะครับ
 
-</body>
-</html>
+        if (!name || !contact) {
+            alert("กรุณาระบุชื่อและการติดต่อกลับ");
+            return;
+        }
+
+        status.innerText = "กำลังส่งข้อมูล...";
+        try {
+            const url = `${SCRIPT_URL}?sponsorName=${encodeURIComponent(name)}&sponsorContact=${encodeURIComponent(contact)}&sponsorMsg=${encodeURIComponent(msg)}`;
+            await fetch(url, { mode: 'no-cors' });
+            status.style.color = "var(--matrix-green)";
+            status.innerText = "ส่งข้อมูลเรียบร้อย ทีมงานจะติดต่อกลับโดยเร็วที่สุด";
+            
+            // ล้างฟอร์ม
+            document.getElementById('s-name').value = "";
+            document.getElementById('s-contact').value = "";
+            document.getElementById('s-msg').value = "";
+        } catch (e) {
+            status.innerText = "เกิดข้อผิดพลาด กรุณาลองใหม่";
+        }
+    }
+</script>
