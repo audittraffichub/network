@@ -10,19 +10,14 @@
         .timer-display { font-size: 2.5rem; color: var(--matrix-green); margin: 15px 0; font-weight: bold; }
         #login-area { display: block; } 
         #action-area, #submit-area { display: none; }
-        input[type="text"] { 
-            padding: 12px; width: 80%; max-width: 300px; 
-            background: #000; color: var(--matrix-green); 
-            border: 1px solid var(--matrix-green); margin-bottom: 20px;
-            text-align: center; font-family: monospace; font-size: 1.1rem;
-        }
-        /* Popup Styles */
-        #submit-popup {
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 90%; max-width: 400px; background: #000; border: 2px solid var(--matrix-green);
-            padding: 30px; z-index: 1000; text-align: center; box-shadow: 0 0 20px var(--matrix-green);
-        }
+        input[type="text"] { padding: 12px; width: 80%; max-width: 300px; background: #000; color: var(--matrix-green); border: 1px solid var(--matrix-green); margin-bottom: 20px; text-align: center; font-family: monospace; font-size: 1.1rem; }
+        
+        /* Feedback & Popup Styles */
+        #feedback-section { display: none; background: #000; border: 1px solid var(--matrix-green); padding: 15px; margin-top: 15px; }
+        #feedback-text { width: 100%; height: 60px; background: #111; color: var(--matrix-green); border: 1px solid #333; padding: 10px; font-family: monospace; margin-bottom: 10px; }
+        #submit-popup, #view-fb-popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 450px; background: #000; border: 2px solid var(--matrix-green); padding: 30px; z-index: 1000; text-align: center; box-shadow: 0 0 20px var(--matrix-green); }
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; }
+        .fb-item { border-bottom: 1px solid #222; padding: 10px 0; font-size: 0.85rem; text-align: left; color: var(--matrix-green); }
     </style>
 </head>
 <body>
@@ -46,41 +41,53 @@
             PROGRESS: <span id="current-step" style="color:var(--matrix-green)">0</span> SITES AUDITED
         </div>
         <div class="audit-card">
-            <h3 id="site-title">กำลังดึงข้อมูลคิว...</h3>
+            <h3 id="site-title">พร้อมทำการ Audit</h3>
+            
             <div id="timer" class="timer-display" style="display:none;">30</div>
+            
+            <div id="feedback-section">
+                <p style="color:var(--matrix-green); font-size:0.8rem;">[ STEP 2: ให้คำแนะนำเว็บนี้เพื่อรับแต้ม ]</p>
+                <textarea id="feedback-text" placeholder="เว็บสวยครับ, ตัวสะกดผิด, อยากให้มีปุ่มแอดไลน์..."></textarea>
+                <button class="audit-btn" onclick="submitFeedbackAndNext()" style="width:100%;">ส่งความเห็น & รับแต้ม</button>
+            </div>
+
             <button id="action-btn" class="audit-btn" onclick="startAudit()" disabled>LOADING...</button>
         </div>
     </div>
 
     <div id="submit-area" class="audit-card">
         <h2 style="color:var(--matrix-green)">[ ACCESS GRANTED ]</h2>
-        <p>ระบบอนุญาตให้คุณอัปเดต URL ประจำตัวได้แล้ว</p>
-        <br>
+        <p>คุณได้รับสิทธิ์เข้าถึงระบบจัดการลิงก์</p>
         <button class="audit-btn" onclick="openPopup()" style="background:var(--matrix-green); color:#000;">ฝากลิงก์เว็บของคุณ</button>
+        <button class="audit-btn" onclick="loadMyFeedback()" style="border-color:#555; margin-top:10px;">เช็คคอมเมนต์ที่ได้รับ</button>
         <br><br>
-        <button class="audit-btn" onclick="resetSession()" style="font-size:0.7rem; padding:5px 10px;">ทำรายการใหม่ (เปลี่ยนชื่อ)</button>
+        <button class="audit-btn" onclick="resetSession()" style="font-size:0.7rem; padding:5px 10px;">LOGOUT (เปลี่ยนชื่อ)</button>
     </div>
 </div>
 
 <div id="overlay" class="overlay"></div>
+
 <div id="submit-popup">
     <h3 style="color:var(--matrix-green)">UPDATE YOUR URL</h3>
-    <p style="font-size: 0.8rem; color: #888;">ลิงก์นี้จะถูกนำไปสุ่มให้สมาชิกคนอื่นดู</p>
     <input type="text" id="new-url" placeholder="https://your-website.com" style="width: 100%; margin: 15px 0; background: #111; color: #0f0; border: 1px solid #0f0; padding: 10px;">
-    <br>
     <button class="audit-btn" onclick="submitNewUrl()">ยืนยันการบันทึก</button>
     <p id="status-msg" style="margin-top:10px; font-size:0.8rem;"></p>
-    <button onclick="closePopup()" style="background:none; border:none; color:#555; cursor:pointer; margin-top:10px;">[ ปิดหน้าต่าง ]</button>
+    <button onclick="closePopup()" style="background:none; border:none; color:#555; cursor:pointer; margin-top:10px;">[ ปิด ]</button>
+</div>
+
+<div id="view-fb-popup">
+    <h3 style="color:var(--matrix-green)">WEB AUDIT LOGS</h3>
+    <div id="fb-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;"></div>
+    <button onclick="closeFbPopup()" class="audit-btn">ปิดหน้าต่าง</button>
 </div>
 
 <script>
     let step = 0;
+    let totalWatched = 0;
     let timerInterval;
     let memberSites = [];
-    let totalWatched = 0; 
     const UNLOCK_AT = 5;
     
-    // URL สคริปต์ล่าสุดของพี่
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxjfMIiIfxSN_HbPt7c-pMItUAOQuzclTpiSvA4i91aLJ1QRFUAfzsw77xAdJfAC7VF3Q/exec";
 
     window.onload = () => {
@@ -89,8 +96,7 @@
     };
 
     function saveIdentity() {
-        const idInput = document.getElementById('viewer-id');
-        const id = idInput.value.trim();
+        const id = document.getElementById('viewer-id').value.trim();
         if (id.length >= 3) {
             localStorage.setItem('auditor_id', id);
             showActionArea(id);
@@ -101,15 +107,8 @@
         try {
             const response = await fetch(`${SCRIPT_URL}?checkUser=${encodeURIComponent(id)}`);
             const stats = await response.json();
-            if(stats) {
-                document.getElementById('user-display').innerHTML = `
-                    [ USER: ${id.toUpperCase()} ] <br>
-                    <span style="color:var(--matrix-green); font-size:0.8rem; letter-spacing:1px;">
-                        ช่วยเพื่อนแล้ว: ${stats.done} ครั้ง | เว็บคุณถูกดู: ${stats.received} ครั้ง
-                    </span>
-                `;
-            }
-        } catch (e) { console.log("Stats update delayed"); }
+            document.getElementById('user-display').innerHTML = `[ USER: ${id.toUpperCase()} ] <br> <span style="color:var(--matrix-green); font-size:0.8rem;">ช่วยเพื่อนแล้ว: ${stats.done} | เว็บคุณถูกดู: ${stats.received}</span>`;
+        } catch (e) { console.log("Stats error"); }
     }
 
     async function showActionArea(id) {
@@ -119,12 +118,11 @@
         try {
             const response = await fetch(SCRIPT_URL);
             memberSites = await response.json();
-            if (memberSites && memberSites.length > 0) {
-                document.getElementById('site-title').innerText = "พร้อมทำการ Audit";
+            if (memberSites.length > 0) {
                 document.getElementById('action-btn').disabled = false;
                 document.getElementById('action-btn').innerText = "เริ่มตรวจสอบ (SITE 1)";
             }
-        } catch (e) { document.getElementById('site-title').innerText = "ERROR: ฐานข้อมูลขัดข้อง"; }
+        } catch (e) { document.getElementById('site-title').innerText = "ฐานข้อมูลขัดข้อง"; }
     }
 
     function startAudit() {
@@ -132,82 +130,95 @@
         const btn = document.getElementById('action-btn');
         const timerDiv = document.getElementById('timer');
         let timeLeft = 30;
+
         window.open(memberSites[step], '_blank');
         btn.disabled = true;
         btn.innerText = "กำลังตรวจสอบ...";
         timerDiv.style.display = 'block';
         timerDiv.innerText = timeLeft;
+
         timerInterval = setInterval(() => {
             timeLeft--;
             timerDiv.innerText = timeLeft;
-            if (timeLeft <= 0) { clearInterval(timerInterval); completeStep(); }
+            if (timeLeft <= 0) { 
+                clearInterval(timerInterval); 
+                showFeedbackUI(); 
+            }
         }, 1000);
     }
 
-    async function completeStep() {
+    function showFeedbackUI() {
+        document.getElementById('timer').style.display = 'none';
+        document.getElementById('action-btn').style.display = 'none';
+        document.getElementById('feedback-section').style.display = 'block';
+    }
+
+    async function submitFeedbackAndNext() {
+        const feedback = document.getElementById('feedback-text').value.trim();
+        if (feedback.length < 5) { alert("กรุณาพิมพ์คำแนะนำอย่างน้อย 5 ตัวอักษร"); return; }
+
         const viewerId = localStorage.getItem('auditor_id');
         const watchedUrl = memberSites[step];
 
-        // 1. ส่งแต้มไปบันทึก
-        fetch(`${SCRIPT_URL}?viewerId=${encodeURIComponent(viewerId)}&targetUrl=${encodeURIComponent(watchedUrl)}`, { mode: 'no-cors' });
+        fetch(`${SCRIPT_URL}?viewerId=${encodeURIComponent(viewerId)}&targetUrl=${encodeURIComponent(watchedUrl)}&feedback=${encodeURIComponent(feedback)}`, { mode: 'no-cors' });
 
+        document.getElementById('feedback-text').value = "";
+        document.getElementById('feedback-section').style.display = 'none';
+        document.getElementById('action-btn').style.display = 'inline-block';
+        completeStep();
+    }
+
+    function completeStep() {
         step++;
-        totalWatched++; 
-        
+        totalWatched++;
         document.getElementById('current-step').innerText = totalWatched;
         
-        const btn = document.getElementById('action-btn');
-        const timerDiv = document.getElementById('timer');
-
-        // 2. ปลดล็อกเมื่อครบ 5
         if (totalWatched >= UNLOCK_AT) {
-            document.getElementById('submit-area').style.display = 'block'; 
-            const grantedH2 = document.getElementById('submit-area').querySelector('h2');
-            if(grantedH2) grantedH2.innerText = "[ UNLIMITED ACCESS GRANTED ]";
+            document.getElementById('submit-area').style.display = 'block';
         }
 
-        // 3. ระบบวนลูปคิว
         if (step >= memberSites.length) {
-            btn.innerText = "กำลังดึงคิวใหม่...";
-            btn.disabled = true;
-            try {
-                const response = await fetch(SCRIPT_URL);
-                memberSites = await response.json();
-                step = 0; 
-            } catch (e) { console.log("Reload queue failed"); }
+            refreshQueue();
+        } else {
+            document.getElementById('action-btn').innerText = `ตรวจสอบเว็บต่อไป (ลำดับที่ ${totalWatched + 1})`;
+            showUserStats(localStorage.getItem('auditor_id'));
         }
-
-        btn.disabled = false;
-        btn.innerText = `ตรวจสอบเว็บต่อไป (ลำดับที่ ${totalWatched + 1})`;
-        timerDiv.style.display = 'none';
-        showUserStats(viewerId); 
     }
 
-    function openPopup() {
+    async function refreshQueue() {
+        document.getElementById('action-btn').innerText = "กำลังดึงคิวใหม่...";
+        const response = await fetch(SCRIPT_URL);
+        memberSites = await response.json();
+        step = 0;
+        document.getElementById('action-btn').innerText = `ตรวจสอบเว็บต่อไป (ลำดับที่ ${totalWatched + 1})`;
+    }
+
+    async function loadMyFeedback() {
+        const myUrl = prompt("ระบุ URL เว็บของคุณเพื่อดูคอมเมนต์:");
+        if (!myUrl) return;
+        const res = await fetch(`${SCRIPT_URL}?getMyFeedback=${encodeURIComponent(myUrl)}`);
+        const logs = await res.json();
+        const listDiv = document.getElementById('fb-list');
+        listDiv.innerHTML = logs.length ? "" : "<p>ยังไม่มีคอมเมนต์</p>";
+        logs.forEach(log => { listDiv.innerHTML += `<div class="fb-item">(${log.time}) > ${log.msg}</div>`; });
         document.getElementById('overlay').style.display = 'block';
-        document.getElementById('submit-popup').style.display = 'block';
+        document.getElementById('view-fb-popup').style.display = 'block';
     }
-    function closePopup() {
-        document.getElementById('overlay').style.display = 'none';
-        document.getElementById('submit-popup').style.display = 'none';
-    }
+
+    function openPopup() { document.getElementById('overlay').style.display = 'block'; document.getElementById('submit-popup').style.display = 'block'; }
+    function closePopup() { document.getElementById('overlay').style.display = 'none'; document.getElementById('submit-popup').style.display = 'none'; }
+    function closeFbPopup() { document.getElementById('overlay').style.display = 'none'; document.getElementById('view-fb-popup').style.display = 'none'; }
+    function resetSession() { localStorage.removeItem('auditor_id'); location.reload(); }
 
     async function submitNewUrl() {
         const viewerId = localStorage.getItem('auditor_id');
         const urlValue = document.getElementById('new-url').value.trim();
-        const msg = document.getElementById('status-msg');
-        if (!urlValue.includes('http')) { alert("กรุณาใส่ URL ให้ถูกต้อง"); return; }
-        msg.innerText = "กำลังบันทึกข้อมูล...";
-        try {
-            const finalUrl = `${SCRIPT_URL}?viewerId=${encodeURIComponent(viewerId)}&updateMyUrl=${encodeURIComponent(urlValue)}`;
-            await fetch(finalUrl, { mode: 'no-cors' });
-            msg.style.color = "var(--matrix-green)";
-            msg.innerText = "บันทึกสำเร็จ! ลิงก์เข้าสู่คลังแล้ว";
-            setTimeout(() => { location.reload(); }, 2000);
-        } catch (e) { msg.innerText = "เกิดข้อผิดพลาด"; }
+        if (!urlValue.includes('http')) { alert("URL ไม่ถูกต้อง"); return; }
+        document.getElementById('status-msg').innerText = "กำลังบันทึก...";
+        await fetch(`${SCRIPT_URL}?viewerId=${encodeURIComponent(viewerId)}&updateMyUrl=${encodeURIComponent(urlValue)}`, { mode: 'no-cors' });
+        document.getElementById('status-msg').innerText = "สำเร็จ!";
+        setTimeout(() => location.reload(), 1500);
     }
-
-    function resetSession() { localStorage.removeItem('auditor_id'); location.reload(); }
 </script>
 </body>
 </html>
