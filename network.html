@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRAFFIC ENGINE V2 | audittraffichub</title>
+    <title>TRAFFIC ENGINE V2 | TEAM AUDIT TRAFFIC HUB</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .audit-card { background: #111; border: 1px solid var(--panel-border); padding: 25px; margin: 20px 0; text-align: center; }
@@ -30,7 +30,7 @@
 <div class="container">
     <header class="header">
         <h1 class="matrix-title">TRAFFIC ENGINE V2</h1>
-        <p id="user-display" style="color: #666; line-height: 1.5;">[ SYSTEM: STANDBY ]</p>
+        <p id="user-display" style="color: #666; line-height: 1.5;">[ TEAM AUDIT TRAFFIC HUB: READY ]</p>
     </header>
 
     <div id="login-area" class="audit-card">
@@ -43,7 +43,7 @@
 
     <div id="action-area">
         <div style="text-align:center; color:#888; margin-bottom:10px;">
-            PROGRESS: <span id="current-step" style="color:var(--matrix-green)">0</span> / 5 SITES
+            PROGRESS: <span id="current-step" style="color:var(--matrix-green)">0</span> SITES AUDITED
         </div>
         <div class="audit-card">
             <h3 id="site-title">กำลังดึงข้อมูลคิว...</h3>
@@ -77,6 +77,8 @@
     let step = 0;
     let timerInterval;
     let memberSites = [];
+    let totalWatched = 0; 
+    const UNLOCK_AT = 5;
     
     // URL สคริปต์ล่าสุดของพี่
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxjfMIiIfxSN_HbPt7c-pMItUAOQuzclTpiSvA4i91aLJ1QRFUAfzsw77xAdJfAC7VF3Q/exec";
@@ -142,56 +144,45 @@
         }, 1000);
     }
 
-    // 🚩 ประกาศตัวแปรไว้นอกฟังก์ชัน (เอาไว้บนสุดของ <script> หรือก่อนฟังก์ชันนี้ก็ได้)
-    let totalWatched = 0; 
-    const UNLOCK_AT = 5;
-
     async function completeStep() {
         const viewerId = localStorage.getItem('auditor_id');
         const watchedUrl = memberSites[step];
 
-        // 1. ส่งแต้มไปบันทึก (V5)
+        // 1. ส่งแต้มไปบันทึก
         fetch(`${SCRIPT_URL}?viewerId=${encodeURIComponent(viewerId)}&targetUrl=${encodeURIComponent(watchedUrl)}`, { mode: 'no-cors' });
 
-        step++;          // ลำดับในคิวปัจจุบัน (0, 1, 2)
-        totalWatched++;   // ยอดรวมสะสม (นับไปเรื่อยๆ ไม่รีเซ็ต)
+        step++;
+        totalWatched++; 
         
         document.getElementById('current-step').innerText = totalWatched;
         
         const btn = document.getElementById('action-btn');
         const timerDiv = document.getElementById('timer');
 
-        // 🚩 2. เช็คเงื่อนไขปลดล็อกปุ่มฝากลิงก์ (เมื่อดูครบ 5 เว็บ)
+        // 2. ปลดล็อกเมื่อครบ 5
         if (totalWatched >= UNLOCK_AT) {
             document.getElementById('submit-area').style.display = 'block'; 
-            // เปลี่ยนข้อความปุ่ม Access Granted ให้ดูเทพขึ้น
             const grantedH2 = document.getElementById('submit-area').querySelector('h2');
             if(grantedH2) grantedH2.innerText = "[ UNLIMITED ACCESS GRANTED ]";
         }
 
-        // 🚩 3. ระบบวนลูปคิว (ถ้าดูจนหมด 3 ลิงก์ที่ดึงมา ให้ดึงใหม่ทันที)
+        // 3. ระบบวนลูปคิว
         if (step >= memberSites.length) {
             btn.innerText = "กำลังดึงคิวใหม่...";
             btn.disabled = true;
             try {
                 const response = await fetch(SCRIPT_URL);
                 memberSites = await response.json();
-                step = 0; // รีเซ็ตตัวนับคิวใหม่ แต่ totalWatched ไม่รีเซ็ต
-            } catch (e) {
-                console.log("Reload queue failed");
-            }
+                step = 0; 
+            } catch (e) { console.log("Reload queue failed"); }
         }
 
-        // 4. รีเซ็ตปุ่มให้กดต่อได้ทันที (Looping)
         btn.disabled = false;
         btn.innerText = `ตรวจสอบเว็บต่อไป (ลำดับที่ ${totalWatched + 1})`;
         timerDiv.style.display = 'none';
-        
-        // อัปเดตแต้มโชว์ด้านบน
         showUserStats(viewerId); 
     }
 
-    // --- Popup Functions ---
     function openPopup() {
         document.getElementById('overlay').style.display = 'block';
         document.getElementById('submit-popup').style.display = 'block';
