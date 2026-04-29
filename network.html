@@ -149,14 +149,24 @@
         document.getElementById('feedback-section').style.display = 'block';
     }
 
-    // 🚩 ฟังก์ชันฉบับแก้ไข: ส่งคอมเมนต์ชัวร์ + ปลดล็อกปุ่ม
+    // 🚩 ฟังก์ชันฉบับแก้ไข: ส่งคอมเมนต์ชัวร์ + ป้องกันตัวอักษรซ้ำ
     async function submitFeedbackAndNext() {
         const feedbackBox = document.getElementById('feedback-text');
         const feedback = feedbackBox.value.trim();
-        
+
+        // 🛡️ ดักจับตัวอักษรซ้ำเกิน 4 ตัว เช่น "aaaaa", "55555", "....."
+        const isRepeated = /(.)\1{4,}/.test(feedback);         
+
+        // 1. เช็คความยาว
         if (feedback.length < 5) { 
             alert("กรุณาพิมพ์คำแนะนำอย่างน้อย 5 ตัวอักษร"); 
             return; 
+        }
+
+        // 2. เช็คการพิมพ์มั่ว (ซ้ำซาก) - พี่เพิ่มตรงนี้เข้าไปครับ
+        if (isRepeated) {
+            alert("คำแนะนำของคุณดูไม่เป็นธรรมชาติ (มีการใช้ตัวอักษรซ้ำเกินไป) กรุณาให้คำแนะนำที่มีประโยชน์กว่านี้");
+            return;
         }
 
         const viewerId = localStorage.getItem('auditor_id');
